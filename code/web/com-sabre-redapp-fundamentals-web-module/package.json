@@ -1,0 +1,44 @@
+{
+  "name": "com-sabre-redapp-fundamentals-web-module",
+  "version": "1.0.0",
+  "description": "NGV module",
+  "author": {
+    "name": "Alex Mene"
+  },
+  "contributors": [],
+  "private": false,
+  "license": "SEE LICENSE IN LICENSE.txt",
+  "ngv": {
+    "buildDependencies": {
+      "sabre-ngv-app": "*",
+      "sabre-ngv-core": "*",
+      "sabre-ngv-xp": "*",
+      "sabre-ngv-redAppSidePanel": "*",
+      "sabre-ngv-communication": "*",
+      "sabre-ngv-custom-forms": "*",
+      "sabre-ngv-pos-cdm": "*",
+      "sabre-ngv-commsg": "*",
+      "sabre-ngv-UIComponents": "*"
+    },
+    "concierge_version_min": "5.11.1",
+    "runtimeDependencies": {},
+    "testDependencies": {},
+    "buildInfo": {
+      "concierge_version": "7.5.18",
+      "date": "2025-04-17T20:06:37.293Z",
+      "ts": 1744920397293,
+      "rebuildHash": "7x5x1812b114c85aaa5e4d1824d0bf920c9aa86c5d53b78"
+    }
+  },
+  "dependencies": {
+    "sabre-ngv-app": "*",
+    "sabre-ngv-core": "*",
+    "sabre-ngv-xp": "*",
+    "sabre-ngv-redAppSidePanel": "*",
+    "sabre-ngv-communication": "*",
+    "sabre-ngv-custom-forms": "*",
+    "sabre-ngv-pos-cdm": "*",
+    "sabre-ngv-commsg": "*",
+    "sabre-ngv-UIComponents": "*"
+  }
+}
