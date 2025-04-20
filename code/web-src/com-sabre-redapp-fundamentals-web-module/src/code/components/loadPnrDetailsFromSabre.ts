@@ -39,7 +39,7 @@ export const loadPnrDetailsFromSabre = async (onDataLoaded: (data: PnrData) => v
 
         const parsedData = parsePnrData(response.getParsedValue());
 
-        console.log('Passengers:', parsedData.passengers);
+        console.log('🧩 Parsed PNR Data:', JSON.stringify(parsedData, null, 2));
         console.log('Segments:', parsedData.segments);
 
         // Вот здесь вызываем колбэк, передавая данные!

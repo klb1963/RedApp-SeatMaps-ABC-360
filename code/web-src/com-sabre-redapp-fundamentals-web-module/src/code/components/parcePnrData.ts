@@ -1,18 +1,30 @@
-// файл: parsePnrData.ts
-
 import { Option } from 'sabre-ngv-UIComponents/advancedDropdown/interfaces/Option';
 
-export interface PnrData {
-    passengers: Option[];
-    segments: Option[];
+export interface PassengerOption extends Option<string> {
+    givenName: string;
+    surname: string;
 }
 
-// Принимаем XMLDocument
-export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
-    const passengers: Option[] = [];
-    const segments: Option[] = [];
+export interface SegmentOption extends Option<string> {
+    origin: string;
+    destination: string;
+    departureDate: string;
+    marketingCarrier: string;
+    marketingFlightNumber: string;
+    bookingClass: string;
+    equipment: string; // ⚡️ добавили сюда!
+}
 
-    // извлекаем пассажиров из PNR
+export interface PnrData {
+    passengers: PassengerOption[];
+    segments: SegmentOption[];
+}
+
+export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
+    const passengers: PassengerOption[] = [];
+    const segments: SegmentOption[] = [];
+
+    // --- пассажиры ---
     const passengerNodes = xmlDoc.getElementsByTagName('stl19:Passenger');
     for (let i = 0; i < passengerNodes.length; i++) {
         const passenger = passengerNodes[i];
@@ -22,21 +34,39 @@ export const parsePnrData = (xmlDoc: XMLDocument): PnrData => {
 
         passengers.push({
             label: `${lastName}/${firstName}`,
-            value: id
+            value: id,
+            givenName: firstName,
+            surname: lastName
         });
     }
 
-    // извлекаем сегменты полета из PNR
+    // --- сегменты ---
     const segmentNodes = xmlDoc.getElementsByTagName('stl19:Air');
     for (let i = 0; i < segmentNodes.length; i++) {
         const segment = segmentNodes[i];
+
         const departure = segment.getElementsByTagName('stl19:DepartureAirport')[0]?.textContent || '';
         const arrival = segment.getElementsByTagName('stl19:ArrivalAirport')[0]?.textContent || '';
+
+        const marketingCarrier = segment.getElementsByTagName('stl19:MarketingCarrier')[0]?.textContent || 'LH'; // ставим дефолт LH
+        const bookingClass = segment.getElementsByTagName('stl19:ResBookDesigCode')[0]?.textContent || 'Y';       // ставим дефолт Y
+
         const marketingFlightNumber = segment.getElementsByTagName('stl19:MarketingFlightNumber')[0]?.textContent || '';
+        const departureDateRaw = segment.getElementsByTagName('stl19:DepartureDateTime')[0]?.textContent || '';
+        const equipment = segment.getElementsByTagName('stl19:EquipmentType')[0]?.textContent || ''; // ⚡️ equipment
+
+        const departureDate = departureDateRaw.split('T')[0];
 
         segments.push({
             label: `${departure} → ${arrival} (${marketingFlightNumber})`,
-            value: `${departure}-${arrival}-${marketingFlightNumber}`
+            value: `${departure}-${arrival}-${marketingFlightNumber}`,
+            origin: departure,
+            destination: arrival,
+            departureDate,
+            marketingCarrier,
+            marketingFlightNumber,
+            bookingClass,
+            equipment // ⚡️ equipment добавляем в сегмент
         });
     }
 

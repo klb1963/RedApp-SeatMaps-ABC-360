@@ -18,16 +18,17 @@
       "sabre-ngv-custom-forms": "*",
       "sabre-ngv-pos-cdm": "*",
       "sabre-ngv-commsg": "*",
-      "sabre-ngv-UIComponents": "*"
+      "sabre-ngv-UIComponents": "*",
+      "sabre-ngv-modals": "*"
     },
     "concierge_version_min": "5.11.1",
     "runtimeDependencies": {},
     "testDependencies": {},
     "buildInfo": {
       "concierge_version": "7.5.18",
-      "date": "2025-04-17T20:06:37.293Z",
-      "ts": 1744920397293,
-      "rebuildHash": "7x5x1812b114c85aaa5e4d1824d0bf920c9aa86c5d53b78"
+      "date": "2025-04-20T09:28:39.802Z",
+      "ts": 1745141319802,
+      "rebuildHash": "7x5x1813a37fc402187430a9c28a11458df61724561fd35"
     }
   },
   "dependencies": {
@@ -39,6 +40,7 @@
     "sabre-ngv-custom-forms": "*",
     "sabre-ngv-pos-cdm": "*",
     "sabre-ngv-commsg": "*",
-    "sabre-ngv-UIComponents": "*"
+    "sabre-ngv-UIComponents": "*",
+    "sabre-ngv-modals": "*"
   }
 }

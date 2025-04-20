@@ -1,5 +1,5 @@
 "use strict";
-// файл: loadPnrDetailsFromSabre.ts
+// файл: code/components/loadSeatMapFromSabre.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,46 +37,39 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadPnrDetailsFromSabre = void 0;
+exports.loadSeatMapFromSabre = void 0;
 var Context_1 = require("../Context");
 var ISoapApiService_1 = require("sabre-ngv-communication/interfaces/ISoapApiService");
-var PnrPublicService_1 = require("sabre-ngv-app/app/services/impl/PnrPublicService");
-var parcePnrData_1 = require("./parcePnrData");
-var loadPnrDetailsFromSabre = function (onDataLoaded) { return __awaiter(void 0, void 0, void 0, function () {
-    var pnrService, soapApiService, recordLocator, soapPayload, response, parsedData, error_1;
+var loadSeatMapFromSabre = function (flightSegment, passengers, onSuccess, onError) { return __awaiter(void 0, void 0, void 0, function () {
+    var soapApiService, passengerBlocks, cabinDefinitionBlock, soapPayload, response, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
-                pnrService = (0, Context_1.getService)(PnrPublicService_1.PnrPublicService);
                 soapApiService = (0, Context_1.getService)(ISoapApiService_1.ISoapApiService);
-                recordLocator = pnrService.getRecordLocator();
-                if (!recordLocator) {
-                    console.warn('No active PNR. Please create or retrieve a PNR first.');
-                    return [2 /*return*/];
-                }
-                console.log('Record Locator:', recordLocator);
-                soapPayload = "\n            <ns6:GetReservationRQ xmlns:ns6=\"http://webservices.sabre.com/pnrbuilder/v1_19\" Version=\"1.19.22\">\n                <ns6:RequestType>Stateful</ns6:RequestType>\n                <ns6:ReturnOptions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"ns6:ReturnOptions\" UnmaskCreditCard=\"false\" ShowTicketStatus=\"true\">\n                    <ns6:ViewName>Full</ns6:ViewName>\n                    <ns6:ResponseFormat>STL</ns6:ResponseFormat>\n                </ns6:ReturnOptions>\n            </ns6:GetReservationRQ>\n        ";
+                passengerBlocks = passengers.map(function (passenger) { return "\n            <ns4:FareAvailQualifiers passengerType=\"ADT\">\n                <ns4:TravellerID>" + passenger.travellerId + "</ns4:TravellerID>\n                <ns4:GivenName>" + passenger.givenName + "</ns4:GivenName>\n                <ns4:Surname>" + passenger.surname + "</ns4:Surname>\n                <ns4:SSR>TKNE</ns4:SSR>\n            </ns4:FareAvailQualifiers>\n        "; }).join('');
+                cabinDefinitionBlock = flightSegment.cabin ? "\n            <ns4:CabinDefinition>\n                <ns4:Cabin>" + flightSegment.cabin + "</ns4:Cabin>\n            </ns4:CabinDefinition>\n        " : "\n            <ns4:CabinDefinition>\n                <ns4:RBD>" + flightSegment.bookingClass + "</ns4:RBD>\n            </ns4:CabinDefinition>\n        ";
+                soapPayload = "\n            <ns4:EnhancedSeatMapRQ xmlns:ns4=\"http://stl.sabre.com/Merchandising/v8\">\n                <ns4:SeatMapQueryEnhanced>\n                    <ns4:RequestType>Payload</ns4:RequestType>\n\n                    <ns4:POS company=\"DI9L\" multiHost=\"DI9L\">\n                        <ns4:Actual city=\"MUC\"/>\n                        <ns4:PCC>DI9L</ns4:PCC>\n                    </ns4:POS>\n\n                    <ns4:Flight id=\"f1\" destination=\"" + flightSegment.destination + "\" origin=\"" + flightSegment.origin + "\">\n                        <ns4:DepartureDate>" + flightSegment.departureDate + "</ns4:DepartureDate>\n                        <ns4:Marketing carrier=\"" + flightSegment.marketingCarrier + "\">" + flightSegment.marketingFlightNumber + "</ns4:Marketing>\n                    </ns4:Flight>\n\n                    " + cabinDefinitionBlock + "\n\n                    <ns4:Currency>USD</ns4:Currency>\n\n                    " + passengerBlocks + "\n                </ns4:SeatMapQueryEnhanced>\n                <ns4:CalculateDiscount>true</ns4:CalculateDiscount>\n            </ns4:EnhancedSeatMapRQ>\n        ";
+                console.log('📤 Sending EnhancedSeatMapRQ payload:', soapPayload);
                 return [4 /*yield*/, soapApiService.callSws({
-                        action: 'GetReservationRQ',
+                        action: 'EnhancedSeatMapRQ',
                         payload: soapPayload,
                         authTokenType: 'SESSION'
                     })];
             case 1:
                 response = _a.sent();
-                console.log('GetReservationRQ Response:', response);
-                parsedData = (0, parcePnrData_1.parsePnrData)(response.getParsedValue());
-                console.log('🧩 Parsed PNR Data:', JSON.stringify(parsedData, null, 2));
-                console.log('Segments:', parsedData.segments);
-                // Вот здесь вызываем колбэк, передавая данные!
-                onDataLoaded(parsedData);
+                console.log('✅ EnhancedSeatMapRQ Response:', response);
+                onSuccess(response.getParsedValue());
                 return [3 /*break*/, 3];
             case 2:
                 error_1 = _a.sent();
-                console.error('Error calling GetReservationRQ via ISoapApiService:', error_1);
+                console.error('❌ Error calling EnhancedSeatMapRQ:', error_1);
+                if (onError) {
+                    onError(error_1);
+                }
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];
         }
     });
 }); };
-exports.loadPnrDetailsFromSabre = loadPnrDetailsFromSabre;
+exports.loadSeatMapFromSabre = loadSeatMapFromSabre;

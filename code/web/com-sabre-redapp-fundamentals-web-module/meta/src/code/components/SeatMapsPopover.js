@@ -1,4 +1,5 @@
 "use strict";
+// файл: SeatMapsPopover.tsx
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -40,9 +41,10 @@ var React = require("react");
 var react_bootstrap_1 = require("react-bootstrap");
 var SimpleDropdown_1 = require("sabre-ngv-UIComponents/advancedDropdown/components/SimpleDropdown");
 var loadPnrDetailsFromSabre_1 = require("./loadPnrDetailsFromSabre");
+var loadSeatMapFromSabre_1 = require("./loadSeatMapFromSabre");
 var Context_1 = require("../Context");
 var PublicModalService_1 = require("sabre-ngv-modals/services/PublicModalService");
-var SeatMapComponent_1 = require("./SeatMapComponent");
+var XmlViewer_1 = require("./XmlViewer"); // внешний компонент XmlViewer
 var SeatMapsPopover = /** @class */ (function (_super) {
     __extends(SeatMapsPopover, _super);
     function SeatMapsPopover(props) {
@@ -61,19 +63,60 @@ var SeatMapsPopover = /** @class */ (function (_super) {
                 _this.setState({ selectedSegment: selected.value });
             }
         };
-        _this.handleOpenSeatMap = function () {
-            var _a;
-            var publicModalsService = (0, Context_1.getService)(PublicModalService_1.PublicModalsService);
-            var modalOptions = {
-                header: 'Seat Map',
-                component: React.createElement(SeatMapComponent_1.SeatMapComponent, {
-                    passengerIds: _this.state.selectedPassengers,
-                    segmentId: _this.state.selectedSegment
-                }),
-                modalClassName: 'seatmap-modal-class'
+        _this.handleEmptySeatMap = function () {
+            var selectedSegment = _this.state.selectedSegment;
+            if (!selectedSegment) {
+                console.warn('❗ Please select a segment first.');
+                return;
+            }
+            // сюда код для показа пустой карты
+        };
+        _this.handleOccupiedSeatMap = function () {
+            var selectedSegment = _this.state.selectedSegment;
+            if (!selectedSegment) {
+                console.warn('❗ Please select a segment first.');
+                return;
+            }
+            // сюда код для запроса карты с данными
+        };
+        // Общий метод для запроса карты
+        _this.loadSeatMap = function (_a) {
+            var availabilityInfo = _a.availabilityInfo;
+            var _b = _this.state, selectedPassengers = _b.selectedPassengers, selectedSegment = _b.selectedSegment, segments = _b.segments, passengers = _b.passengers;
+            var selectedSegmentData = segments.find(function (seg) { return seg.value === selectedSegment; });
+            if (!selectedSegmentData) {
+                console.error('❌ No segment data found for selected segment.');
+                return;
+            }
+            var flightSegment = {
+                id: selectedSegment,
+                origin: selectedSegmentData.origin,
+                destination: selectedSegmentData.destination,
+                departureDate: selectedSegmentData.departureDate,
+                marketingCarrier: selectedSegmentData.marketingCarrier,
+                marketingFlightNumber: selectedSegmentData.marketingFlightNumber,
+                flightNumber: selectedSegmentData.marketingFlightNumber,
+                bookingClass: selectedSegmentData.bookingClass,
+                equipment: selectedSegmentData.equipment
             };
-            publicModalsService.showReactModal(modalOptions);
-            (_a = _this.props['__layerInstance']) === null || _a === void 0 ? void 0 : _a.close(); // Без ошибок
+            var selectedPassengersData = passengers.filter(function (p) { return selectedPassengers.includes(p.value); });
+            var mappedPassengers = selectedPassengersData.map(function (p) { return ({
+                id: p.value,
+                travellerId: Number(p.value),
+                givenName: p.givenName,
+                surname: p.surname
+            }); });
+            (0, loadSeatMapFromSabre_1.loadSeatMapFromSabre)(flightSegment, mappedPassengers, function (response) {
+                console.log('✅ Seat map response received from Sabre:', response);
+                var serializer = new XMLSerializer();
+                var prettyXml = serializer.serializeToString(response);
+                var publicModalsService = (0, Context_1.getService)(PublicModalService_1.PublicModalsService);
+                publicModalsService.showReactModal({
+                    header: availabilityInfo ? '🛫 Seat Map (Occupied)' : '🛫 Seat Map (Empty)',
+                    component: React.createElement(XmlViewer_1.XmlViewer, { xml: prettyXml }),
+                    modalClassName: 'seatmap-xml-modal'
+                });
+            });
         };
         _this.state = {
             selectedPassengers: [],
@@ -97,14 +140,7 @@ var SeatMapsPopover = /** @class */ (function (_super) {
         var _this = this;
         var _a = this.state, passengers = _a.passengers, segments = _a.segments, selectedPassengers = _a.selectedPassengers, selectedSegment = _a.selectedSegment;
         var isButtonDisabled = selectedPassengers.length === 0 || !selectedSegment;
-        return (React.createElement("div", { style: {
-                padding: '20px',
-                width: '400px',
-                minHeight: '350px',
-                overflowY: 'auto',
-                backgroundColor: '#fff',
-                borderRadius: '8px'
-            } },
+        return (React.createElement("div", { style: { padding: '20px', minWidth: '400px', backgroundColor: '#fff' } },
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.ControlLabel, null,
                     "Select Passengers (",
@@ -116,8 +152,9 @@ var SeatMapsPopover = /** @class */ (function (_super) {
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.ControlLabel, null, "Select Flight Segment"),
                 React.createElement(SimpleDropdown_1.SimpleDropdown, { options: segments, onChange: this.handleSegmentChange })),
-            React.createElement("div", { style: { display: 'flex', justifyContent: 'flex-end', marginTop: '20px' } },
-                React.createElement(react_bootstrap_1.Button, { className: "btn-primary", onClick: this.handleOpenSeatMap, disabled: isButtonDisabled }, "Open Seat Map"))));
+            React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', marginTop: '20px' } },
+                React.createElement(react_bootstrap_1.Button, { className: "btn-primary", disabled: isButtonDisabled, onClick: this.handleEmptySeatMap }, "\u2708\uFE0F Empty Seat Map"),
+                React.createElement(react_bootstrap_1.Button, { className: "btn-success", disabled: isButtonDisabled, onClick: this.handleOccupiedSeatMap }, "\uD83D\uDC65 Occupied Seat Map"))));
     };
     return SeatMapsPopover;
 }(React.Component));

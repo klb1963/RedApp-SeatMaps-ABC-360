@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Module } from 'sabre-ngv-core/modules/Module';
 import { getService } from './Context';
 import { ExtensionPointService } from 'sabre-ngv-xp/services/ExtensionPointService';
@@ -5,8 +6,9 @@ import { RedAppSidePanelConfig } from 'sabre-ngv-xp/configs/RedAppSidePanelConfi
 import { RedAppSidePanelButton } from 'sabre-ngv-redAppSidePanel/models/RedAppSidePanelButton';
 import { LayerService } from 'sabre-ngv-core/services/LayerService';
 import { CreatePNR } from './CreatePNR';
+import { createPnrForTwoPassengers } from './components/createPnrForTwoPassengers';
+import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
 import { SeatMapsPopover } from './components/SeatMapsPopover';
-import { createPnrMucDxbForm } from './components/createPnrMucDxbForm';
 
 export class Main extends Module {
     init(): void {
@@ -27,9 +29,9 @@ export class Main extends Module {
                 false
             ),
             new RedAppSidePanelButton(
-                "Create PNR MUC-DXB",                  // новая кнопка
+                "Create PNR 2",
                 "btn-secondary side-panel-button",
-                () => { createPnrMucDxbForm(); },       // вызываем createPnrMucDxbForm()
+                () => { createPnrForTwoPassengers(); },
                 false
             )
         ]);
@@ -42,9 +44,12 @@ export class Main extends Module {
     }
 
     openSeatMaps(): void {
-        const ls = getService(LayerService);
-        ls.showOnLayer(SeatMapsPopover, { display: "areaView", position: 43 });
+        const publicModalsService = getService(PublicModalsService);
+        publicModalsService.showReactModal({
+            header: 'Select Passengers and Segment',
+            component: React.createElement(SeatMapsPopover),
+            modalClassName: 'seatmap-modal-class'
+        });
     }
-
 
 }
