@@ -38,13 +38,13 @@ export const loadSeatMapFromSabre = async (
             </ns4:FareAvailQualifiers>
         `).join('');
 
-        const cabinDefinitionBlock = flightSegment.cabin ? `
-            <ns4:CabinDefinition>
-                <ns4:Cabin>${flightSegment.cabin}</ns4:Cabin>
-            </ns4:CabinDefinition>
+        const cabinDefinitionBlock = flightSegment.bookingClass ? `
+        <ns4:CabinDefinition>
+            <ns4:RBD>${flightSegment.bookingClass}</ns4:RBD>
+        </ns4:CabinDefinition>
         ` : `
             <ns4:CabinDefinition>
-                <ns4:RBD>${flightSegment.bookingClass}</ns4:RBD>
+                <ns4:Cabin>${flightSegment.cabin}</ns4:Cabin>
             </ns4:CabinDefinition>
         `;
 
@@ -70,6 +70,7 @@ export const loadSeatMapFromSabre = async (
                     ${passengerBlocks}
                 </ns4:SeatMapQueryEnhanced>
                 <ns4:CalculateDiscount>true</ns4:CalculateDiscount>
+                <ns4:ShowOffers>true</ns4:ShowOffers> 
             </ns4:EnhancedSeatMapRQ>
         `;
 

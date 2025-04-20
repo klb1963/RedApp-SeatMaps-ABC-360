@@ -8,14 +8,19 @@ import { loadPnrDetailsFromSabre } from './loadPnrDetailsFromSabre';
 import { loadSeatMapFromSabre } from './loadSeatMapFromSabre';
 import { getService } from '../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
-import { PassengerOption, SegmentOption } from './parcePnrData'; // ✅ исправленный импорт
-import { XmlViewer } from './XmlViewer'; // внешний компонент XmlViewer
+import { PassengerOption, SegmentOption } from './parcePnrData';
+import { XmlViewer } from '../utils/XmlViewer';
 
 interface SeatMapsPopoverState {
     selectedPassengers: string[];
     selectedSegment: string;
+    selectedSegmentFullData: SegmentOption | null; // 🆕 сюда запомним весь сегмент
+    selectedCabinClass: string;
+    selectedMarketingCarrier: string;
+    customMarketingCarrier: string;
     passengers: PassengerOption[];
     segments: SegmentOption[];
+    lastXmlResponse: string | null;
 }
 
 export class SeatMapsPopover extends React.Component<Record<string, unknown>, SeatMapsPopoverState> {
@@ -24,106 +29,146 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
         this.state = {
             selectedPassengers: [],
             selectedSegment: '',
+            selectedSegmentFullData: null, 
+            selectedCabinClass: 'Economy',
+            selectedMarketingCarrier: 'LH',
+            customMarketingCarrier: '',
             passengers: [],
-            segments: []
+            segments: [],
+            lastXmlResponse: null
         };
     }
 
+    cabinClasses: Option<string>[] = [
+        { label: 'Economy (Y)', value: 'Economy' },
+        { label: 'Premium Economy (W)', value: 'PremiumEconomy' },
+        { label: 'Business (J)', value: 'Business' },
+        { label: 'First (F)', value: 'First' }
+    ];
+
     componentDidMount(): void {
         loadPnrDetailsFromSabre((data) => {
+            let selectedSegment = '';
+            let selectedSegmentFullData: SegmentOption | null = null;
+    
+            if (data.segments.length === 1) {
+                selectedSegment = data.segments[0].value;
+                selectedSegmentFullData = data.segments[0];
+            }
+    
+            let selectedMarketingCarrier = 'LH';
+            let customMarketingCarrier = '';
+    
+            if (data.segments.length > 0) {
+                const marketingCarrier = data.segments[0].marketingCarrier.trim().toUpperCase();
+                if (marketingCarrier === 'LH' || marketingCarrier === 'EK') {
+                    selectedMarketingCarrier = marketingCarrier;
+                } else if (marketingCarrier) {
+                    selectedMarketingCarrier = 'Other';
+                    customMarketingCarrier = marketingCarrier;
+                }
+            }
+    
             this.setState({
                 passengers: data.passengers.map(p => ({ ...p, checked: true })),
                 selectedPassengers: data.passengers.map(p => p.value),
-                segments: data.segments
+                segments: data.segments,
+                selectedSegment,
+                selectedSegmentFullData,
+                lastXmlResponse: null,
+                selectedMarketingCarrier,
+                customMarketingCarrier
             });
         });
     }
 
     handlePassengerChange = (passengerValue: string): void => {
-        const { selectedPassengers } = this.state;
-        const isSelected = selectedPassengers.includes(passengerValue);
-
-        const updatedPassengers = isSelected
-            ? selectedPassengers.filter(p => p !== passengerValue)
-            : [...selectedPassengers, passengerValue];
-
-        this.setState({ selectedPassengers: updatedPassengers });
-    }
+        this.setState((prevState) => ({
+            selectedPassengers: prevState.selectedPassengers.includes(passengerValue)
+                ? prevState.selectedPassengers.filter(p => p !== passengerValue)
+                : [...prevState.selectedPassengers, passengerValue]
+        }));
+    };
 
     handleSegmentChange = (options: Option[]): void => {
         const selected = options.find(opt => opt.checked);
         if (selected) {
-            this.setState({ selectedSegment: selected.value });
+            const fullData = this.state.segments.find(seg => seg.value === selected.value) || null;
+            this.setState({ selectedSegment: selected.value, selectedSegmentFullData: fullData });
         }
     }
 
-    handleEmptySeatMap = (): void => {
-        const { selectedSegment } = this.state;
-        if (!selectedSegment) {
-            console.warn('❗ Please select a segment first.');
-            return;
-        }
-        // сюда код для показа пустой карты
-    };
-    
-    handleOccupiedSeatMap = (): void => {
-        const { selectedSegment } = this.state;
-        if (!selectedSegment) {
-            console.warn('❗ Please select a segment first.');
-            return;
-        }
-        // сюда код для запроса карты с данными
+    handleCabinClassChange = (options: Option[]): void => {
+        const selected = options.find(opt => opt.checked);
+        if (selected) this.setState({ selectedCabinClass: selected.value });
     };
 
-    // Общий метод для запроса карты
-    private loadSeatMap = ({ availabilityInfo }: { availabilityInfo: boolean }): void => {
-        const { selectedPassengers, selectedSegment, segments, passengers } = this.state;
+    handleMarketingCarrierChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+        this.setState({
+            selectedMarketingCarrier: event.target.value,
+            customMarketingCarrier: event.target.value === 'Other' ? '' : ''
+        });
+    };
 
-        const selectedSegmentData = segments.find(seg => seg.value === selectedSegment) as SegmentOption;
-        if (!selectedSegmentData) {
-            console.error('❌ No segment data found for selected segment.');
-            return;
-        }
+    handleCustomMarketingCarrierChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({ customMarketingCarrier: event.target.value.toUpperCase() });
+    };
+
+    private loadSeatMap = async ({ availabilityInfo, silent = false }: { availabilityInfo: boolean; silent?: boolean }): Promise<void> => {
+        const { selectedPassengers, selectedSegment, selectedCabinClass, selectedMarketingCarrier, customMarketingCarrier, segments, passengers } = this.state;
+        const selectedSegmentData = segments.find(seg => seg.value === selectedSegment);
+        if (!selectedSegmentData) return console.error('❌ No segment data found.');
+
+        const marketingCarrierFinal = selectedMarketingCarrier === 'Other' ? customMarketingCarrier : selectedMarketingCarrier;
 
         const flightSegment = {
             id: selectedSegment,
             origin: selectedSegmentData.origin,
             destination: selectedSegmentData.destination,
             departureDate: selectedSegmentData.departureDate,
-            marketingCarrier: selectedSegmentData.marketingCarrier,
+            marketingCarrier: marketingCarrierFinal,
             marketingFlightNumber: selectedSegmentData.marketingFlightNumber,
             flightNumber: selectedSegmentData.marketingFlightNumber,
             bookingClass: selectedSegmentData.bookingClass,
-            equipment: selectedSegmentData.equipment
+            equipment: selectedSegmentData.equipment,
+            cabin: selectedCabinClass as any
         };
 
-        const selectedPassengersData = passengers.filter(p => selectedPassengers.includes(p.value));
-
-        const mappedPassengers = selectedPassengersData.map(p => ({
+        const mappedPassengers = passengers.filter(p => selectedPassengers.includes(p.value)).map(p => ({
             id: p.value,
             travellerId: Number(p.value),
             givenName: p.givenName,
             surname: p.surname
         }));
 
-        loadSeatMapFromSabre(flightSegment, mappedPassengers, (response) => {
-            console.log('✅ Seat map response received from Sabre:', response);
+        await loadSeatMapFromSabre(flightSegment, mappedPassengers, (response) => {
+            const prettyXml = new XMLSerializer().serializeToString(response);
+            this.setState({ lastXmlResponse: prettyXml });
 
-            const serializer = new XMLSerializer();
-            const prettyXml = serializer.serializeToString(response);
+            if (!silent) {
+                getService(PublicModalsService).showReactModal({
+                    header: availabilityInfo ? '🛫 Seat Map (Occupied)' : '🛫 Seat Map (Empty)',
+                    component: <XmlViewer xml={prettyXml} />, modalClassName: 'seatmap-xml-modal'
+                });
+            }
+        });
+    };
 
-            const publicModalsService = getService(PublicModalsService);
-            publicModalsService.showReactModal({
-                header: availabilityInfo ? '🛫 Seat Map (Occupied)' : '🛫 Seat Map (Empty)',
-                component: <XmlViewer xml={prettyXml} />,
-                modalClassName: 'seatmap-xml-modal'
-            });
+    handleShowRawXml = async (): Promise<void> => {
+        if (!this.state.lastXmlResponse) {
+            await this.loadSeatMap({ availabilityInfo: false, silent: true });
+        }
+        getService(PublicModalsService).showReactModal({
+            header: '📄 Last EnhancedSeatMapRS XML',
+            component: <XmlViewer xml={this.state.lastXmlResponse || ''} />,
+            modalClassName: 'seatmap-xml-modal'
         });
     };
 
     render(): JSX.Element {
-        const { passengers, segments, selectedPassengers, selectedSegment } = this.state;
+        const { passengers, segments, selectedPassengers, selectedSegment, selectedCabinClass, selectedMarketingCarrier, customMarketingCarrier } = this.state;
         const isButtonDisabled = selectedPassengers.length === 0 || !selectedSegment;
+        const selectedSegmentData = segments.find(seg => seg.value === selectedSegment);
 
         return (
             <div style={{ padding: '20px', minWidth: '400px', backgroundColor: '#fff' }}>
@@ -132,42 +177,65 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
                     <div style={{ marginTop: '10px' }}>
                         {passengers.map(passenger => (
                             <div key={passenger.value} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={selectedPassengers.includes(passenger.value)}
-                                    onChange={() => this.handlePassengerChange(passenger.value)}
-                                    style={{ marginRight: '8px' }}
-                                />
+                                <input type="checkbox" checked={selectedPassengers.includes(passenger.value)} onChange={() => this.handlePassengerChange(passenger.value)} style={{ marginRight: '8px' }} />
                                 <span>{passenger.label}</span>
                             </div>
                         ))}
                     </div>
                 </FormGroup>
 
+                {this.state.selectedSegmentFullData && (
+                    <div style={{ marginBottom: '10px', fontWeight: 'bold', color: '#333' }}>
+                        ✈️ {this.state.selectedSegmentFullData.origin} → {this.state.selectedSegmentFullData.destination}
+                        ({this.state.selectedSegmentFullData.marketingCarrier}{this.state.selectedSegmentFullData.marketingFlightNumber})
+                        <br />
+                        📅 Departure: {this.state.selectedSegmentFullData.departureDate}
+                    </div>
+                )}
+
                 <FormGroup>
                     <ControlLabel>Select Flight Segment</ControlLabel>
+
                     <SimpleDropdown
-                        options={segments}
+                        options={segments.map(seg => ({
+                            ...seg,
+                            checked: seg.value === selectedSegment
+                        }))}
                         onChange={this.handleSegmentChange}
                     />
+
                 </FormGroup>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                    <Button
-                        className="btn-primary"
-                        disabled={isButtonDisabled}
-                        onClick={this.handleEmptySeatMap}
-                    >
-                        ✈️ Empty Seat Map
+                <FormGroup>
+                    <ControlLabel>Select Cabin Class</ControlLabel>
+                    <SimpleDropdown options={this.cabinClasses.map(opt => ({ ...opt, checked: opt.value === selectedCabinClass }))} onChange={this.handleCabinClassChange} />
+                </FormGroup>
+
+                <FormGroup>
+                    <ControlLabel>Select Marketing Carrier</ControlLabel>
+                    <select value={selectedMarketingCarrier} onChange={this.handleMarketingCarrierChange} className="form-control">
+                        <option value="LH">LH (Lufthansa)</option>
+                        <option value="EK">EK (Emirates)</option>
+                        <option value="Other">Other...</option>
+                    </select>
+                    {selectedMarketingCarrier === 'Other' && (
+                        <input type="text" maxLength={2} className="form-control" placeholder="e.g., AA, BA, AF" value={customMarketingCarrier} onChange={this.handleCustomMarketingCarrierChange} />
+                    )}
+                </FormGroup>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+                    <Button className="btn-info" disabled={isButtonDisabled} onClick={this.handleShowRawXml}>
+                        📄 Show Raw XML
                     </Button>
 
-                    <Button
-                        className="btn-success"
-                        disabled={isButtonDisabled}
-                        onClick={this.handleOccupiedSeatMap}
-                    >
-                        👥 Occupied Seat Map
-                    </Button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <Button className="btn-primary" style={{ flex: 1 }} disabled={isButtonDisabled} onClick={() => this.loadSeatMap({ availabilityInfo: false })}>
+                            ✈️ Empty Seat Map
+                        </Button>
+                        <Button className="btn-success" style={{ flex: 1 }} disabled={isButtonDisabled} onClick={() => this.loadSeatMap({ availabilityInfo: true })}>
+                            👥 Occupied Seat Map
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
