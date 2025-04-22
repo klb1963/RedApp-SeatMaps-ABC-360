@@ -1,5 +1,5 @@
 "use strict";
-// файл: SeatMapsPopover.tsx
+// файл: code/components/SeatMapsPopover.tsx
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -73,6 +73,16 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SeatMapsPopover = void 0;
+/**
+ * SeatMapsPopover - интерфейс для загрузки и отображения карты мест рейса на основе данных PNR.
+ *
+ * Позволяет выбрать пассажиров, сегмент, класс обслуживания и перевозчика.
+ * Отправляет запрос EnhancedSeatMapRQ в Sabre, отображает результат в модальном окне.
+ *
+ * Использует:
+ * - loadPnrDetailsFromSabre() для получения данных PNR
+ * - loadSeatMapFromSabre() для загрузки карты мест
+ */
 var React = require("react");
 var react_bootstrap_1 = require("react-bootstrap");
 var SimpleDropdown_1 = require("sabre-ngv-UIComponents/advancedDropdown/components/SimpleDropdown");
@@ -264,6 +274,9 @@ var SeatMapsPopover = /** @class */ (function (_super) {
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.ControlLabel, null, "Select Cabin Class"),
                 React.createElement(SimpleDropdown_1.SimpleDropdown, { options: this.cabinClasses.map(function (opt) { return (__assign(__assign({}, opt), { checked: opt.value === selectedCabinClass })); }), onChange: this.handleCabinClassChange })),
+            selectedCabinClass && (React.createElement("div", { style: { marginTop: '10px', marginBottom: '10px', fontWeight: 'bold', color: '#0066cc' } },
+                "\uD83C\uDF9F\uFE0F Selected Cabin: ",
+                selectedCabinClass)),
             React.createElement(react_bootstrap_1.FormGroup, null,
                 React.createElement(react_bootstrap_1.ControlLabel, null, "Select Marketing Carrier"),
                 React.createElement("select", { value: selectedMarketingCarrier, onChange: this.handleMarketingCarrierChange, className: "form-control" },

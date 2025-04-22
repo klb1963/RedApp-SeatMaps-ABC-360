@@ -1,4 +1,15 @@
-// файл: SeatMapsPopover.tsx
+// файл: code/components/SeatMapsPopover.tsx
+
+/**
+ * SeatMapsPopover - интерфейс для загрузки и отображения карты мест рейса на основе данных PNR.
+ * 
+ * Позволяет выбрать пассажиров, сегмент, класс обслуживания и перевозчика.
+ * Отправляет запрос EnhancedSeatMapRQ в Sabre, отображает результат в модальном окне.
+ * 
+ * Использует:
+ * - loadPnrDetailsFromSabre() для получения данных PNR
+ * - loadSeatMapFromSabre() для загрузки карты мест
+ */
 
 import * as React from 'react';
 import { Button, FormGroup, ControlLabel } from 'react-bootstrap';
@@ -8,13 +19,13 @@ import { loadPnrDetailsFromSabre } from './loadPnrDetailsFromSabre';
 import { loadSeatMapFromSabre } from './loadSeatMapFromSabre';
 import { getService } from '../Context';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
-import { PassengerOption, SegmentOption } from './parcePnrData';
+import { PassengerOption, SegmentOption } from '../utils/parcePnrData';
 import { XmlViewer } from '../utils/XmlViewer';
 
 interface SeatMapsPopoverState {
     selectedPassengers: string[];
     selectedSegment: string;
-    selectedSegmentFullData: SegmentOption | null; // 🆕 сюда запомним весь сегмент
+    selectedSegmentFullData: SegmentOption | null;
     selectedCabinClass: string;
     selectedMarketingCarrier: string;
     customMarketingCarrier: string;
@@ -210,6 +221,12 @@ export class SeatMapsPopover extends React.Component<Record<string, unknown>, Se
                     <ControlLabel>Select Cabin Class</ControlLabel>
                     <SimpleDropdown options={this.cabinClasses.map(opt => ({ ...opt, checked: opt.value === selectedCabinClass }))} onChange={this.handleCabinClassChange} />
                 </FormGroup>
+
+                {selectedCabinClass && (
+                    <div style={{ marginTop: '10px', marginBottom: '10px',fontWeight: 'bold', color: '#0066cc' }}>
+                        🎟️ Selected Cabin: {selectedCabinClass}
+                    </div>
+                )}
 
                 <FormGroup>
                     <ControlLabel>Select Marketing Carrier</ControlLabel>

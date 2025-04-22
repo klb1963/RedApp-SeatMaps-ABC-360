@@ -1,9 +1,18 @@
-// файл: loadPnrDetailsFromSabre.ts
+// файл: code/components/loadPnrDetailsFromSabre.ts
+
+/**
+ * Загружает полные данные о текущем бронировании (PNR) из Sabre.
+ * 
+ * Использует SOAP API запрос GetReservationRQ.
+ * Извлекает активный Record Locator, отправляет запрос и парсит ответ в структуру PnrData.
+ * 
+ * @param onDataLoaded Колбэк, вызываемый после успешной загрузки и парсинга данных PNR.
+ */
 
 import { getService } from '../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
 import { PnrPublicService } from 'sabre-ngv-app/app/services/impl/PnrPublicService';
-import { parsePnrData, PnrData } from './parcePnrData';
+import { parsePnrData, PnrData } from '../utils/parcePnrData';
 
 export const loadPnrDetailsFromSabre = async (onDataLoaded: (data: PnrData) => void): Promise<void> => {
     try {

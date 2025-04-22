@@ -5,6 +5,7 @@ var ExtensionPointService_1 = require("sabre-ngv-xp/services/ExtensionPointServi
 var NoviceButtonConfig_1 = require("sabre-ngv-xp/configs/NoviceButtonConfig");
 var Context_1 = require("../Context"); // если уже подключено в Main.ts
 var SeatMapsPopover_1 = require("./SeatMapsPopover"); // это React-компонент для поповера
+// НЕ РАБОТАЕТ!!! Кнопка не видна!
 function registerCommandHelperButton() {
     var onClick = function (isOpen) {
         console.log('SeatMaps ABC 360 button clicked. Popover isOpen:', isOpen);

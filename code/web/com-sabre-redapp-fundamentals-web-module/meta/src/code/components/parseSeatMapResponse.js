@@ -1,9 +1,7 @@
 "use strict";
+// файл code/components/parseSeatMapResponse.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseSeatMapResponse = void 0;
-/**
- * Парсит ответ от EnhancedSeatMapRS и возвращает структуру карты салона.
- */
 function parseSeatMapResponse(xmlDocument) {
     console.log('📥 Начинаем разбор ответа EnhancedSeatMapRS');
     var layout = {

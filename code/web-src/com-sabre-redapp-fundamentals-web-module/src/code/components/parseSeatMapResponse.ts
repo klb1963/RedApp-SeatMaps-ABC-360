@@ -1,12 +1,15 @@
+// файл code/components/parseSeatMapResponse.ts
+
+/**
+ * Парсит ответ от EnhancedSeatMapRS и возвращает структуру карты салона.
+ */
+
 export interface ParsedSeatMap {
     layout: any;
     availability: any;
     passengers: any;
 }
 
-/**
- * Парсит ответ от EnhancedSeatMapRS и возвращает структуру карты салона.
- */
 export function parseSeatMapResponse(xmlDocument: Document): ParsedSeatMap {
     console.log('📥 Начинаем разбор ответа EnhancedSeatMapRS');
 

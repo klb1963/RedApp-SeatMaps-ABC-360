@@ -7,8 +7,8 @@ import {CommandMessageBasicRs} from 'sabre-ngv-pos-cdm/commsg';
 import {ICommandMessageService} from 'sabre-ngv-commsg/services/ICommandMessageService';
 import {InterstitialService} from 'sabre-ngv-app/app/services/impl/InterstitialService';
 
-import {getService} from '../Context';
-import {openCustomFormParagraph} from '../utils/openCustomFormParagraph';
+import {getService} from '../../Context';
+import {openCustomFormParagraph} from '../../utils/openCustomFormParagraph';
 
 export const createPnrForTwoPassengers = async (): Promise<void> => {
     const twentyDaysAhead = getService(DatesService).getNow().add(20, 'days').format('DDMMM').toUpperCase();

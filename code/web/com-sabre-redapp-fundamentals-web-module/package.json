@@ -19,16 +19,18 @@
       "sabre-ngv-pos-cdm": "*",
       "sabre-ngv-commsg": "*",
       "sabre-ngv-UIComponents": "*",
-      "sabre-ngv-modals": "*"
+      "sabre-ngv-modals": "*",
+      "sabre-ngv-pricing": "*",
+      "sabre-ngv-airAvailability": "*"
     },
     "concierge_version_min": "5.11.1",
     "runtimeDependencies": {},
     "testDependencies": {},
     "buildInfo": {
       "concierge_version": "7.5.18",
-      "date": "2025-04-20T17:59:38.865Z",
-      "ts": 1745171978865,
-      "rebuildHash": "7x5x1815658645e9cc79ffbe2671fc56b49e4aecaed7a09"
+      "date": "2025-04-22T19:43:10.941Z",
+      "ts": 1745350990941,
+      "rebuildHash": "7x5x181e6f74d3a9c4add11569379780fc748cd0de54dba"
     }
   },
   "dependencies": {
@@ -41,6 +43,8 @@
     "sabre-ngv-pos-cdm": "*",
     "sabre-ngv-commsg": "*",
     "sabre-ngv-UIComponents": "*",
-    "sabre-ngv-modals": "*"
+    "sabre-ngv-modals": "*",
+    "sabre-ngv-pricing": "*",
+    "sabre-ngv-airAvailability": "*"
   }
 }

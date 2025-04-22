@@ -1,5 +1,5 @@
 "use strict";
-// файл: loadPnrDetailsFromSabre.ts
+// файл: code/components/loadPnrDetailsFromSabre.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -38,10 +38,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadPnrDetailsFromSabre = void 0;
+/**
+ * Загружает полные данные о текущем бронировании (PNR) из Sabre.
+ *
+ * Использует SOAP API запрос GetReservationRQ.
+ * Извлекает активный Record Locator, отправляет запрос и парсит ответ в структуру PnrData.
+ *
+ * @param onDataLoaded Колбэк, вызываемый после успешной загрузки и парсинга данных PNR.
+ */
 var Context_1 = require("../Context");
 var ISoapApiService_1 = require("sabre-ngv-communication/interfaces/ISoapApiService");
 var PnrPublicService_1 = require("sabre-ngv-app/app/services/impl/PnrPublicService");
-var parcePnrData_1 = require("./parcePnrData");
+var parcePnrData_1 = require("../utils/parcePnrData");
 var loadPnrDetailsFromSabre = function (onDataLoaded) { return __awaiter(void 0, void 0, void 0, function () {
     var pnrService, soapApiService, recordLocator, soapPayload, response, parsedData, error_1;
     return __generator(this, function (_a) {

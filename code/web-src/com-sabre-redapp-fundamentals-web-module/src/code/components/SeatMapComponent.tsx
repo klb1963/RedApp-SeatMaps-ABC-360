@@ -1,6 +1,4 @@
-// файл: SeatMapComponent.tsx
-
-// файл: SeatMapComponent.tsx
+// файл: code/components/SeatMapComponent.tsx
 
 import * as React from 'react';
 

@@ -23,10 +23,13 @@ var ExtensionPointService_1 = require("sabre-ngv-xp/services/ExtensionPointServi
 var RedAppSidePanelConfig_1 = require("sabre-ngv-xp/configs/RedAppSidePanelConfig");
 var RedAppSidePanelButton_1 = require("sabre-ngv-redAppSidePanel/models/RedAppSidePanelButton");
 var LayerService_1 = require("sabre-ngv-core/services/LayerService");
-var CreatePNR_1 = require("./CreatePNR");
-var createPnrForTwoPassengers_1 = require("./components/createPnrForTwoPassengers");
+var PublicAirAvailabilityService_1 = require("sabre-ngv-airAvailability/services/PublicAirAvailabilityService");
 var PublicModalService_1 = require("sabre-ngv-modals/services/PublicModalService");
+var CreatePNR_1 = require("./components/createPnr/CreatePNR");
+var createPnrForTwoPassengers_1 = require("./components/createPnr/createPnrForTwoPassengers");
 var SeatMapsPopover_1 = require("./components/SeatMapsPopover");
+var SeatMapAvailTile_1 = require("./components/widgets/SeatMapAvailTile");
+var SeatMapAvailView_1 = require("./components/widgets/SeatMapAvailView");
 var Main = /** @class */ (function (_super) {
     __extends(Main, _super);
     function Main() {
@@ -35,6 +38,9 @@ var Main = /** @class */ (function (_super) {
     Main.prototype.init = function () {
         var _this = this;
         _super.prototype.init.call(this);
+        // подключаем виджет для Availability
+        this.registerSeatMapAvailTile();
+        //
         var xp = (0, Context_1.getService)(ExtensionPointService_1.ExtensionPointService);
         var sidepanelMenu = new RedAppSidePanelConfig_1.RedAppSidePanelConfig([
             new RedAppSidePanelButton_1.RedAppSidePanelButton("Create PNR", "btn-secondary side-panel-button", function () { _this.showForm(); }, false),
@@ -54,6 +60,20 @@ var Main = /** @class */ (function (_super) {
             component: React.createElement(SeatMapsPopover_1.SeatMapsPopover),
             modalClassName: 'seatmap-modal-class'
         });
+    };
+    // AvailabilityTile
+    Main.prototype.registerSeatMapAvailTile = function () {
+        var airAvailabilityService = (0, Context_1.getService)(PublicAirAvailabilityService_1.PublicAirAvailabilityService); // внутренний сервис для предоставления данных в рамках Availability
+        var showSeatMapAvailabilityModal = function (data) {
+            console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
+            var modalOptions = {
+                header: 'SeatMaps ABC 360',
+                component: React.createElement(SeatMapAvailView_1.SeatMapAvailView, data),
+                modalClassName: 'react-tile-modal-class'
+            };
+            (0, Context_1.getService)(PublicModalService_1.PublicModalsService).showReactModal(modalOptions);
+        };
+        airAvailabilityService.createAirAvailabilitySearchTile(SeatMapAvailTile_1.SeatMapAvailTile, showSeatMapAvailabilityModal, 'SeatMaps ABC 360');
     };
     return Main;
 }(Module_1.Module));

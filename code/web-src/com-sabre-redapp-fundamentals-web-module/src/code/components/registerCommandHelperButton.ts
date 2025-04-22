@@ -3,6 +3,8 @@ import { NoviceButtonConfig } from 'sabre-ngv-xp/configs/NoviceButtonConfig';
 import { getService } from '../Context'; // если уже подключено в Main.ts
 import { SeatMapsPopover } from './SeatMapsPopover'; // это React-компонент для поповера
 
+// НЕ РАБОТАЕТ!!! Кнопка не видна!
+
 export function registerCommandHelperButton() {
     const onClick = (isOpen: boolean) => {
         console.log('SeatMaps ABC 360 button clicked. Popover isOpen:', isOpen);

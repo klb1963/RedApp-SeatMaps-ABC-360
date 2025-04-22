@@ -38,6 +38,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadSeatMapFromSabre = void 0;
+/**
+ * Загружает SeatMap для заданного сегмента рейса и списка пассажиров.
+ *
+ * Использует Sabre EnhancedSeatMapRQ через SOAP API.
+ * Формирует и отправляет запрос с данными о рейсе, пассажирах и классе обслуживания.
+ *
+ * @param flightSegment Данные сегмента рейса (город отправления, прибытия, дата, перевозчик и т.д.).
+ * @param passengers Список пассажиров для запроса.
+ * @param onSuccess Колбэк, вызываемый при успешном получении карты мест.
+ * @param onError (опционально) Колбэк для обработки ошибок при вызове API.
+ */
 var Context_1 = require("../Context");
 var ISoapApiService_1 = require("sabre-ngv-communication/interfaces/ISoapApiService");
 var loadSeatMapFromSabre = function (flightSegment, passengers, onSuccess, onError) { return __awaiter(void 0, void 0, void 0, function () {

@@ -1,6 +1,6 @@
 import * as React from "react";
 import {Button, Form, FormGroup, Modal, InputGroup, ControlLabel, FormControl, HelpBlock, Panel, Alert} from "react-bootstrap";
-import { getService, t } from "./Context";
+import { getService, t } from "../../Context";
 import { LayerService } from "sabre-ngv-core/services/LayerService";
 import {ISoapApiService} from "sabre-ngv-communication/interfaces/ISoapApiService";
 import { PnrPublicService } from "sabre-ngv-app/app/services/impl/PnrPublicService";

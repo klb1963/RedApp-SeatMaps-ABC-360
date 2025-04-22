@@ -19,7 +19,9 @@
       "sabre-ngv-pos-cdm": "*",
       "sabre-ngv-commsg": "*",
       "sabre-ngv-UIComponents": "*",
-      "sabre-ngv-modals": "*"
+      "sabre-ngv-modals": "*",
+      "sabre-ngv-pricing": "*",
+      "sabre-ngv-airAvailability": "*"
     },
     "concierge_version_min": "5.11.1",
     "runtimeDependencies": {},
@@ -35,6 +37,8 @@
     "sabre-ngv-pos-cdm": "*",
     "sabre-ngv-commsg": "*",
     "sabre-ngv-UIComponents": "*",
-    "sabre-ngv-modals": "*"
+    "sabre-ngv-modals": "*",
+    "sabre-ngv-pricing": "*",
+    "sabre-ngv-airAvailability": "*"
   }
 }

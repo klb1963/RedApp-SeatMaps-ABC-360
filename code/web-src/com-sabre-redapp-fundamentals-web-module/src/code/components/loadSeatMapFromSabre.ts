@@ -1,5 +1,17 @@
 // файл: code/components/loadSeatMapFromSabre.ts
 
+/**
+ * Загружает SeatMap для заданного сегмента рейса и списка пассажиров.
+ * 
+ * Использует Sabre EnhancedSeatMapRQ через SOAP API.
+ * Формирует и отправляет запрос с данными о рейсе, пассажирах и классе обслуживания.
+ * 
+ * @param flightSegment Данные сегмента рейса (город отправления, прибытия, дата, перевозчик и т.д.).
+ * @param passengers Список пассажиров для запроса.
+ * @param onSuccess Колбэк, вызываемый при успешном получении карты мест.
+ * @param onError (опционально) Колбэк для обработки ошибок при вызове API.
+ */
+
 import { getService } from '../Context';
 import { ISoapApiService } from 'sabre-ngv-communication/interfaces/ISoapApiService';
 

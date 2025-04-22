@@ -5,15 +5,22 @@ import { ExtensionPointService } from 'sabre-ngv-xp/services/ExtensionPointServi
 import { RedAppSidePanelConfig } from 'sabre-ngv-xp/configs/RedAppSidePanelConfig';
 import { RedAppSidePanelButton } from 'sabre-ngv-redAppSidePanel/models/RedAppSidePanelButton';
 import { LayerService } from 'sabre-ngv-core/services/LayerService';
-import { CreatePNR } from './CreatePNR';
-import { createPnrForTwoPassengers } from './components/createPnrForTwoPassengers';
+import { PublicAirAvailabilityService } from 'sabre-ngv-airAvailability/services/PublicAirAvailabilityService';
+import { ReactModalOptions } from 'sabre-ngv-modals/components/PublicReactModal/ReactModalOptions';
 import { PublicModalsService } from 'sabre-ngv-modals/services/PublicModalService';
+
+import { CreatePNR } from './components/createPnr/CreatePNR';
+import { createPnrForTwoPassengers } from './components/createPnr/createPnrForTwoPassengers';
 import { SeatMapsPopover } from './components/SeatMapsPopover';
+import { SeatMapAvailTile } from './components/widgets/SeatMapAvailTile';
+import { SeatMapAvailView } from './components/widgets/SeatMapAvailView';
 
 export class Main extends Module {
     init(): void {
         super.init();
-
+        // подключаем виджет для Availability
+        this.registerSeatMapAvailTile();
+        //
         const xp = getService(ExtensionPointService);
         const sidepanelMenu = new RedAppSidePanelConfig([
             new RedAppSidePanelButton(
@@ -51,5 +58,30 @@ export class Main extends Module {
             modalClassName: 'seatmap-modal-class'
         });
     }
+
+    // AvailabilityTile
+    private registerSeatMapAvailTile(): void {
+        const airAvailabilityService = getService(PublicAirAvailabilityService); // внутренний сервис для предоставления данных в рамках Availability
+
+        const showSeatMapAvailabilityModal = (data: any) => {
+
+            console.log('📥 [Availability] Received Data:', JSON.stringify(data, null, 2));
+
+            const modalOptions: ReactModalOptions = {
+                header: 'SeatMaps ABC 360',
+                component: React.createElement(SeatMapAvailView, data),
+                modalClassName: 'react-tile-modal-class'
+            };
+
+            getService(PublicModalsService).showReactModal(modalOptions);
+        };
+
+        airAvailabilityService.createAirAvailabilitySearchTile(
+            SeatMapAvailTile,
+            showSeatMapAvailabilityModal,
+            'SeatMaps ABC 360'
+        );
+    }
+
 
 }
